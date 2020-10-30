@@ -15,6 +15,7 @@ class GenericSpider(SitemapSpider):
         endpoints = kwargs.get('start_urls').split(',')
         self.sitemap_urls = [urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap.xml") for x in endpoints]
         self.sitemap_urls.extend([urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap_index.xml") for x in endpoints])
+        self.sitemap_urls.extend([urljoin(urlunparse(urlparse(x)._replace(path='')), "/robots.txt") for x in endpoints])
         self.allowed_domains = [urlparse(x).netloc for x in endpoints]
 
     def start_requests(self):

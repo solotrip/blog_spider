@@ -86,3 +86,12 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# BFO Crawl settings
+SCHEDULER_PRIORITY_QUEUE = 'scrapy.pqueues.DownloaderAwarePriorityQueue'
+REACTOR_THREADPOOL_MAXSIZE = 20
+DOWNLOAD_TIMEOUT = 15
+
+DEPTH_PRIORITY = 1
+SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
+SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
