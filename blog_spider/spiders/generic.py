@@ -1,7 +1,8 @@
 import scrapy
 from scrapy.spiders import SitemapSpider
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, urlunparse
 import logging
+from scrapy.http import Request, XmlResponse
 
 class GenericSpider(SitemapSpider):
     name = 'generic'
@@ -12,9 +13,15 @@ class GenericSpider(SitemapSpider):
     def __init__(self, *args, **kwargs):
         super(GenericSpider, self).__init__(*args, **kwargs)
         endpoints = kwargs.get('start_urls').split(',')
-        self.sitemap_urls = [urljoin(x, "/sitemap.xml") for x in endpoints]
-        logging.info(" ".join(self.start_urls))
+        self.sitemap_urls = [urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap.xml") for x in endpoints]
+        self.sitemap_urls.extend([urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap_index.xml") for x in endpoints])
         self.allowed_domains = [urlparse(x).netloc for x in endpoints]
+
+    def start_requests(self):
+        requests = list(super(GenericSpider, self).start_requests())
+        logging.info("Requests count: {}".format(len(requests)))
+        return requests
+
 
     def parse(self, response):
         item = {}
@@ -30,7 +37,7 @@ class GenericSpider(SitemapSpider):
         container.xpath('.//*[name(.) != "script" and name(.) != "style" ]').extract()
         item['text'] = "\n".join(
             container.xpath('.//*[name(.) != "script" and name(.) != "style" ]/text()').extract())
-        item['html'] = container.extract()
+        item['html'] = response.text
         item['domain'] = response.meta['download_slot']
         item['url'] = response.url
         return item
