@@ -1,20 +1,24 @@
 import scrapy
 from scrapy.spiders import SitemapSpider
+from scrapy.exceptions import CloseSpider
 from urllib.parse import urlparse, urljoin, urlunparse
 import logging
 from scrapy.http import Request, XmlResponse
+
 
 class GenericSpider(SitemapSpider):
     name = 'generic'
     custom_settings = {
         'LOG_LEVEL': 'INFO'
     }
-
-    def __init__(self, *args, **kwargs):
+    count = 0
+    def __init__(self, start_urls='', *args, **kwargs):
         super(GenericSpider, self).__init__(*args, **kwargs)
-        endpoints = kwargs.get('start_urls').split(',')
+        endpoints = set(start_urls.split(','))
+        self.sitemap_follow = [r'^((?!image|attachment).)*$']  # don't crawl image sitemaps
         self.sitemap_urls = [urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap.xml") for x in endpoints]
-        self.sitemap_urls.extend([urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap_index.xml") for x in endpoints])
+        self.sitemap_urls.extend(
+            [urljoin(urlunparse(urlparse(x)._replace(path='')), "/sitemap_index.xml") for x in endpoints])
         self.sitemap_urls.extend([urljoin(urlunparse(urlparse(x)._replace(path='')), "/robots.txt") for x in endpoints])
         self.allowed_domains = [urlparse(x).netloc for x in endpoints]
 
@@ -22,7 +26,6 @@ class GenericSpider(SitemapSpider):
         requests = list(super(GenericSpider, self).start_requests())
         logging.info("Requests count: {}".format(len(requests)))
         return requests
-
 
     def parse(self, response):
         item = {}
@@ -41,4 +44,6 @@ class GenericSpider(SitemapSpider):
         item['html'] = response.text
         item['domain'] = response.meta['download_slot']
         item['url'] = response.url
+        self.count+=1
         return item
+

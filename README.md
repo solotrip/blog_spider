@@ -17,7 +17,7 @@ The output file format is `domain_YYYY-MM-DD-hh-mm-ss.jsonl`
 
 
 ```
-scrapy crawl generic -a start_urls=https://www.nomadicmatt.com,https://worldofwanderlust.com
+scrapy crawl generic -a start_urls=https://www.nomadicmatt.com,https://worldofwanderlust.com -s  OUTPUT_PATH=crawled/
 ```
 ### Parameters 
 
